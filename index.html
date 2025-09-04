@@ -1,143 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8"/>
-    <link rel="manifest" href="manifest.webmanifest">
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <meta name="theme-color" content="#000000" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-	<style>
-		body {
-			margin: 0;
-			padding: 0;
-			background-color: #000000;
-            overflow: hidden;
-		}
-        #canvasArea {
-            margin-left: auto;
-            margin-right: auto;
-            overflow: hidden;
-        }
-
-        
-	</style>
-    <!-- Libs and GDJS core files : -->
-		<script src="libs/jshashtable.js" crossorigin="anonymous"></script>
-	<script src="logger.js" crossorigin="anonymous"></script>
-	<script src="gd.js" crossorigin="anonymous"></script>
-	<script src="libs/rbush.js" crossorigin="anonymous"></script>
-	<script src="AsyncTasksManager.js" crossorigin="anonymous"></script>
-	<script src="inputmanager.js" crossorigin="anonymous"></script>
-	<script src="jsonmanager.js" crossorigin="anonymous"></script>
-	<script src="Model3DManager.js" crossorigin="anonymous"></script>
-	<script src="ResourceLoader.js" crossorigin="anonymous"></script>
-	<script src="ResourceCache.js" crossorigin="anonymous"></script>
-	<script src="timemanager.js" crossorigin="anonymous"></script>
-	<script src="polygon.js" crossorigin="anonymous"></script>
-	<script src="runtimeobject.js" crossorigin="anonymous"></script>
-	<script src="profiler.js" crossorigin="anonymous"></script>
-	<script src="RuntimeInstanceContainer.js" crossorigin="anonymous"></script>
-	<script src="runtimescene.js" crossorigin="anonymous"></script>
-	<script src="scenestack.js" crossorigin="anonymous"></script>
-	<script src="force.js" crossorigin="anonymous"></script>
-	<script src="RuntimeLayer.js" crossorigin="anonymous"></script>
-	<script src="layer.js" crossorigin="anonymous"></script>
-	<script src="RuntimeCustomObjectLayer.js" crossorigin="anonymous"></script>
-	<script src="timer.js" crossorigin="anonymous"></script>
-	<script src="runtimewatermark.js" crossorigin="anonymous"></script>
-	<script src="runtimegame.js" crossorigin="anonymous"></script>
-	<script src="variable.js" crossorigin="anonymous"></script>
-	<script src="variablescontainer.js" crossorigin="anonymous"></script>
-	<script src="oncetriggers.js" crossorigin="anonymous"></script>
-	<script src="runtimebehavior.js" crossorigin="anonymous"></script>
-	<script src="SpriteAnimator.js" crossorigin="anonymous"></script>
-	<script src="spriteruntimeobject.js" crossorigin="anonymous"></script>
-	<script src="affinetransformation.js" crossorigin="anonymous"></script>
-	<script src="CustomRuntimeObjectInstanceContainer.js" crossorigin="anonymous"></script>
-	<script src="CustomRuntimeObject.js" crossorigin="anonymous"></script>
-	<script src="CustomRuntimeObject2D.js" crossorigin="anonymous"></script>
-	<script src="events-tools/commontools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/variabletools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/runtimescenetools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/inputtools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/objecttools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/cameratools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/soundtools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/storagetools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/stringtools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/windowtools.js" crossorigin="anonymous"></script>
-	<script src="events-tools/networktools.js" crossorigin="anonymous"></script>
-	<script src="splash/gd-logo-dark.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/pixi.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/pixi-filters-tools.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/runtimegame-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/runtimescene-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/layer-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/pixi-image-manager.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/pixi-bitmapfont-manager.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/spriteruntimeobject-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/CustomRuntimeObject2DPixiRenderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/DebuggerPixiRenderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/loadingscreen-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="pixi-renderers/pixi-effects-manager.js" crossorigin="anonymous"></script>
-	<script src="howler-sound-manager/howler.min.js" crossorigin="anonymous"></script>
-	<script src="howler-sound-manager/howler-sound-manager.js" crossorigin="anonymous"></script>
-	<script src="fontfaceobserver-font-manager/fontfaceobserver.js" crossorigin="anonymous"></script>
-	<script src="fontfaceobserver-font-manager/fontfaceobserver-font-manager.js" crossorigin="anonymous"></script>
-	<script src="gdjs-evtsext__panelspritebutton__buttonfsm.js" crossorigin="anonymous"></script>
-	<script src="gdjs-evtsext__panelspritebutton__panelspritebutton.js" crossorigin="anonymous"></script>
-	<script src="Extensions/AnchorBehavior/anchorruntimebehavior.js" crossorigin="anonymous"></script>
-	<script src="Extensions/Firebase/A_firebasejs/A_firebase-base.js" crossorigin="anonymous"></script>
-	<script src="Extensions/Firebase/A_firebasejs/B_firebase-database.js" crossorigin="anonymous"></script>
-	<script src="Extensions/Firebase/B_firebasetools/C_firebasetools.js" crossorigin="anonymous"></script>
-	<script src="Extensions/Firebase/B_firebasetools/D_databasetools.js" crossorigin="anonymous"></script>
-	<script src="Extensions/PanelSpriteObject/panelspriteruntimeobject-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="Extensions/PanelSpriteObject/panelspriteruntimeobject.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TextInput/textinputruntimeobject-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TextInput/textinputruntimeobject.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TextObject/textruntimeobject-pixi-renderer.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TextObject/textruntimeobject.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TweenBehavior/TweenManager.js" crossorigin="anonymous"></script>
-	<script src="Extensions/TweenBehavior/tweenruntimebehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/EffectBehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/FlippableBehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/OpacityBehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/ResizableBehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/ScalableBehavior.js" crossorigin="anonymous"></script>
-	<script src="object-capabilities/TextContainerBehavior.js" crossorigin="anonymous"></script>
-	<script src="Extensions/3D/DirectionalLight.js" crossorigin="anonymous"></script>
-	<script src="Extensions/3D/HemisphereLight.js" crossorigin="anonymous"></script>
-	<script src="code0.js" crossorigin="anonymous"></script>
-	<script src="code1.js" crossorigin="anonymous"></script>
-	<script src="data.js" crossorigin="anonymous"></script>
-
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Терминал Заказов</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    width: 100%;
+    padding: 1rem;
+    background: #4A90E2;
+    color: white;
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  main {
+    width: 90%;
+    max-width: 400px;
+    margin-top: 2rem;
+  }
+  input, button {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    background: #4A90E2;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  .status {
+    margin-top: 1rem;
+    padding: 0.6rem;
+    text-align: center;
+    border-radius: 8px;
+  }
+  .status.success { background: #d4edda; color: #155724; }
+  .status.error { background: #f8d7da; color: #721c24; }
+</style>
 </head>
 <body>
 
-    
-	<script>
+<header>Терминал Заказов</header>
+<main>
+  <input type="text" id="terminalNumber" placeholder="Введите номер терминала">
+  <button id="checkTerminal">Найти терминал</button>
 
-    (function() {
-        //Initialization
-        var game = new gdjs.RuntimeGame(gdjs.projectData, {});
+  <input type="number" id="paymentAmount" placeholder="Сумма оплаты" disabled>
+  <button id="createOrder" disabled>Создать заказ</button>
 
-        //Create a renderer
-        game.getRenderer().createStandardCanvas(document.body);
+  <div id="status" class="status"></div>
+</main>
 
-        //Bind keyboards/mouse/touch events
-        game.getRenderer().bindStandardEvents(game.getInputManager(), window, document);
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
-        //Load all assets and start the game
-        game.loadAllAssets(function() {
-            game.startGameLoop();
-        });
-    })();
+// ===== Firebase конфигурация =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBOKqaUE5Zi_ZSL7eSYyby_AjA603SOzQk",
+  authDomain: "sber-emu.firebaseapp.com",
+  databaseURL: "https://sber-emu-default-rtdb.firebaseio.com",
+  projectId: "sber-emu",
+  storageBucket: "sber-emu.appspot.com",
+  messagingSenderId: "704050354843",
+  appId: "1:704050354843:web:9aec7c849444deb092843e",
+  measurementId: "G-GVXLTS6SL3"
+};
 
-	</script>
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ===== Элементы страницы =====
+const terminalInput = document.getElementById('terminalNumber');
+const checkBtn = document.getElementById('checkTerminal');
+const paymentInput = document.getElementById('paymentAmount');
+const createBtn = document.getElementById('createOrder');
+const statusDiv = document.getElementById('status');
+
+// ===== Защита от частых кликов и DDoS =====
+const CLICK_INTERVAL = 3000; // мс между кликами
+const MAX_ORDERS_PER_MINUTE = 5;
+const ORDER_BLOCK_TIME = 60000;
+
+let lastCheckClickTime = 0;
+let lastOrderClickTime = 0;
+let orderCount = 0;
+let firstOrderTime = Date.now();
+let orderBlockedUntil = 0;
+let currentTerminal = null;
+
+// ===== Функции защиты =====
+function canClick(lastClickTime) {
+  return (Date.now() - lastClickTime) >= CLICK_INTERVAL;
+}
+
+function canCreateOrder() {
+  const now = Date.now();
+
+  if (now < orderBlockedUntil) return false;
+
+  if (now - firstOrderTime > ORDER_BLOCK_TIME) {
+    orderCount = 0;
+    firstOrderTime = now;
+  }
+
+  if (orderCount >= MAX_ORDERS_PER_MINUTE) {
+    orderBlockedUntil = now + ORDER_BLOCK_TIME;
+    console.warn("Превышен лимит заказов! Блокировка активна 60 секунд");
+    return false;
+  }
+
+  orderCount++;
+  return true;
+}
+
+// ===== Кнопка поиска терминала =====
+checkBtn.addEventListener('click', async () => {
+  if (!canClick(lastCheckClickTime)) {
+    statusDiv.textContent = "Подождите 3 секунды перед повторной проверкой!";
+    statusDiv.className = 'status error';
+    return;
+  }
+  lastCheckClickTime = Date.now();
+
+  let terminalNumber = terminalInput.value.trim();
+  if (!/^\d+$/.test(terminalNumber)) {
+    statusDiv.textContent = "Номер терминала должен содержать только цифры!";
+    statusDiv.className = 'status error';
+    return;
+  }
+
+  terminalNumber = terminalNumber.toString();
+  try {
+    const terminalRef = ref(db, terminalNumber); // терминалы лежат в корне
+    const snapshot = await get(terminalRef);
+
+    if (snapshot.exists()) {
+      currentTerminal = terminalNumber;
+      statusDiv.textContent = "Терминал найден!";
+      statusDiv.className = 'status success';
+      paymentInput.disabled = false;
+      createBtn.disabled = false;
+    } else {
+      currentTerminal = null;
+      statusDiv.textContent = "Терминал не найден!";
+      statusDiv.className = 'status error';
+      paymentInput.disabled = true;
+      createBtn.disabled = true;
+    }
+  } catch (error) {
+    console.error(error);
+    statusDiv.textContent = "Ошибка при обращении к базе!";
+    statusDiv.className = 'status error';
+  }
+});
+
+// ===== Кнопка создания заказа =====
+createBtn.addEventListener('click', async () => {
+  if (!canClick(lastOrderClickTime)) {
+    statusDiv.textContent = "Подождите 3 секунды перед новым заказом!";
+    statusDiv.className = 'status error';
+    return;
+  }
+
+  if (!canCreateOrder()) {
+    statusDiv.textContent = "Превышен лимит заказов! Подождите минуту.";
+    statusDiv.className = 'status error';
+    return;
+  }
+
+  if (!currentTerminal) return;
+
+  lastOrderClickTime = Date.now();
+  const amount = parseFloat(paymentInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    statusDiv.textContent = "Введите корректную сумму!";
+    statusDiv.className = 'status error';
+    return;
+  }
+
+  try {
+    const terminalRef = ref(db, currentTerminal);
+    await update(terminalRef, { Pay: "on", Value: amount });
+
+    statusDiv.textContent = "Заказ создан успешно!";
+    statusDiv.className = 'status success';
+    paymentInput.value = '';
+  } catch (error) {
+    console.error(error);
+    statusDiv.textContent = "Ошибка при создании заказа!";
+    statusDiv.className = 'status error';
+  }
+});
+</script>
 </body>
 </html>
