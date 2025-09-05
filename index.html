@@ -57,6 +57,7 @@
   }
   .status.success { background: #d4edda; color: #155724; }
   .status.error { background: #f8d7da; color: #721c24; }
+  .status.warning { background: #fff3cd; color: #856404; }
 </style>
 </head>
 <body>
@@ -74,7 +75,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+import { getDatabase, ref, get, update, set, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
 // ===== Firebase конфигурация =====
 const firebaseConfig = {
@@ -99,16 +100,109 @@ const createBtn = document.getElementById('createOrder');
 const statusDiv = document.getElementById('status');
 
 // ===== Защита от частых кликов и DDoS =====
-const CLICK_INTERVAL = 10000; // мс между кликами
+const CLICK_INTERVAL = 3000; // мс между кликами
 const MAX_ORDERS_PER_MINUTE = 5;
-const ORDER_BLOCK_TIME = 60000;
+const MAX_CHECKS_PER_MINUTE = 10;
+const ORDER_BLOCK_TIME = 60000; // 1 минута
+const IP_BAN_TIME = 3600000; // 1 час
 
 let lastCheckClickTime = 0;
 let lastOrderClickTime = 0;
 let orderCount = 0;
+let checkCount = 0;
 let firstOrderTime = Date.now();
+let firstCheckTime = Date.now();
 let orderBlockedUntil = 0;
+let checkBlockedUntil = 0;
 let currentTerminal = null;
+let userIP = null;
+
+// ===== Получение IP пользователя =====
+async function getUserIP() {
+  if (userIP) return userIP;
+  
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    userIP = data.ip;
+    return userIP;
+  } catch (error) {
+    console.error('Ошибка получения IP:', error);
+    // В случае ошибки используем случайный идентификатор сессии
+    userIP = 'unknown_' + Math.random().toString(36).substring(2, 15);
+    return userIP;
+  }
+}
+
+// ===== Проверка блокировки IP =====
+async function checkIPBlock() {
+  const ip = await getUserIP();
+  const ipRef = ref(db, `blocked_ips/${ip.replace(/\./g, '_')}`);
+  
+  try {
+    const snapshot = await get(ipRef);
+    if (snapshot.exists()) {
+      const blockData = snapshot.val();
+      const now = Date.now();
+      
+      if (now < blockData.blockUntil) {
+        // IP заблокирован
+        const minutesLeft = Math.ceil((blockData.blockUntil - now) / 60000);
+        statusDiv.textContent = `Ваш IP заблокирован. Попробуйте через ${minutesLeft} минут.`;
+        statusDiv.className = 'status error';
+        
+        // Блокируем интерфейс
+        terminalInput.disabled = true;
+        checkBtn.disabled = true;
+        paymentInput.disabled = true;
+        createBtn.disabled = true;
+        
+        return true;
+      } else {
+        // Время блокировки истекло, удаляем запись
+        await set(ipRef, null);
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при проверке блокировки IP:', error);
+  }
+  
+  return false;
+}
+
+// ===== Блокировка IP =====
+async function blockIP(reason, duration = IP_BAN_TIME) {
+  const ip = await getUserIP();
+  const ipKey = ip.replace(/\./g, '_');
+  const ipRef = ref(db, `blocked_ips/${ipKey}`);
+  
+  const blockData = {
+    ip: ip,
+    blockedAt: Date.now(),
+    blockUntil: Date.now() + duration,
+    reason: reason
+  };
+  
+  try {
+    await set(ipRef, blockData);
+    console.log(`IP ${ip} заблокирован по причине: ${reason}`);
+    
+    // Блокируем интерфейс
+    terminalInput.disabled = true;
+    checkBtn.disabled = true;
+    paymentInput.disabled = true;
+    createBtn.disabled = true;
+    
+    const minutesLeft = Math.ceil(duration / 60000);
+    statusDiv.textContent = `Ваш IP заблокирован на ${minutesLeft} минут. Причина: ${reason}`;
+    statusDiv.className = 'status error';
+    
+    return true;
+  } catch (error) {
+    console.error('Ошибка при блокировке IP:', error);
+    return false;
+  }
+}
 
 // ===== Функции защиты =====
 function canClick(lastClickTime) {
@@ -117,8 +211,10 @@ function canClick(lastClickTime) {
 
 function canCreateOrder() {
   const now = Date.now();
-
-  if (now < orderBlockedUntil) return false;
+  
+  if (now < orderBlockedUntil) {
+    return false;
+  }
 
   if (now - firstOrderTime > ORDER_BLOCK_TIME) {
     orderCount = 0;
@@ -127,7 +223,7 @@ function canCreateOrder() {
 
   if (orderCount >= MAX_ORDERS_PER_MINUTE) {
     orderBlockedUntil = now + ORDER_BLOCK_TIME;
-    console.warn("Превышен лимит заказов! Блокировка активна 60 секунд");
+    blockIP("Превышен лимит заказов");
     return false;
   }
 
@@ -135,13 +231,54 @@ function canCreateOrder() {
   return true;
 }
 
+function canCheckTerminal() {
+  const now = Date.now();
+  
+  if (now < checkBlockedUntil) {
+    return false;
+  }
+
+  if (now - firstCheckTime > ORDER_BLOCK_TIME) {
+    checkCount = 0;
+    firstCheckTime = now;
+  }
+
+  if (checkCount >= MAX_CHECKS_PER_MINUTE) {
+    checkBlockedUntil = now + ORDER_BLOCK_TIME;
+    blockIP("Превышен лимит проверок терминалов");
+    return false;
+  }
+
+  checkCount++;
+  return true;
+}
+
+// ===== Проверка блокировки при загрузке =====
+document.addEventListener('DOMContentLoaded', async () => {
+  const isBlocked = await checkIPBlock();
+  if (isBlocked) {
+    return;
+  }
+});
+
 // ===== Кнопка поиска терминала =====
 checkBtn.addEventListener('click', async () => {
+  // Проверяем блокировку IP
+  const isBlocked = await checkIPBlock();
+  if (isBlocked) return;
+  
   if (!canClick(lastCheckClickTime)) {
     statusDiv.textContent = "Подождите 3 секунды перед повторной проверкой!";
     statusDiv.className = 'status error';
     return;
   }
+  
+  if (!canCheckTerminal()) {
+    statusDiv.textContent = "Слишком много проверок! Подождите минуту.";
+    statusDiv.className = 'status error';
+    return;
+  }
+  
   lastCheckClickTime = Date.now();
 
   let terminalNumber = terminalInput.value.trim();
@@ -153,7 +290,7 @@ checkBtn.addEventListener('click', async () => {
 
   terminalNumber = terminalNumber.toString();
   try {
-    const terminalRef = ref(db, terminalNumber); // терминалы лежат в корне
+    const terminalRef = ref(db, `terminals/${terminalNumber}`); // изменён путь к терминалам
     const snapshot = await get(terminalRef);
 
     if (snapshot.exists()) {
@@ -178,6 +315,10 @@ checkBtn.addEventListener('click', async () => {
 
 // ===== Кнопка создания заказа =====
 createBtn.addEventListener('click', async () => {
+  // Проверяем блокировку IP
+  const isBlocked = await checkIPBlock();
+  if (isBlocked) return;
+  
   if (!canClick(lastOrderClickTime)) {
     statusDiv.textContent = "Подождите 3 секунды перед новым заказом!";
     statusDiv.className = 'status error';
@@ -185,9 +326,7 @@ createBtn.addEventListener('click', async () => {
   }
 
   if (!canCreateOrder()) {
-    statusDiv.textContent = "Превышен лимит заказов! Подождите минуту.";
-    statusDiv.className = 'status error';
-    return;
+    return; // Блокировка уже обработана в canCreateOrder
   }
 
   if (!currentTerminal) return;
@@ -201,8 +340,13 @@ createBtn.addEventListener('click', async () => {
   }
 
   try {
-    const terminalRef = ref(db, currentTerminal);
-    await update(terminalRef, { Pay: "on", Value: amount });
+    const terminalRef = ref(db, `terminals/${currentTerminal}`);
+    await update(terminalRef, { 
+      Pay: "on", 
+      Value: amount,
+      timestamp: Date.now(),
+      ip: await getUserIP()
+    });
 
     statusDiv.textContent = "Заказ создан успешно!";
     statusDiv.className = 'status success';
@@ -216,4 +360,3 @@ createBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-
