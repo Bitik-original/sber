@@ -99,7 +99,7 @@ const createBtn = document.getElementById('createOrder');
 const statusDiv = document.getElementById('status');
 
 // ===== Защита от частых кликов и DDoS =====
-const CLICK_INTERVAL = 3000; // мс между кликами
+const CLICK_INTERVAL = 10000; // мс между кликами
 const MAX_ORDERS_PER_MINUTE = 5;
 const ORDER_BLOCK_TIME = 60000;
 
@@ -216,3 +216,4 @@ createBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
+
